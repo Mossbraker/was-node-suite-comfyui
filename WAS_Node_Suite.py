@@ -333,7 +333,12 @@ if was_config.__contains__('webui_styles'):
 def packages(versions=False):
     import sys
     import subprocess
-    return [( r.decode().split('==')[0] if not versions else r.decode() ) for r in subprocess.check_output([sys.executable, '-s', '-m', 'pip', 'freeze']).split()]
+    try:
+        return [(r.decode().split('==')[0] if not versions else r.decode()) for r in subprocess.check_output([sys.executable, '-s', '-m', 'pip', 'freeze']).split()]
+    # on pip freeze error, print the error and return an empty list
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing pip freeze command: {e}")
+        return []
 
 def install_package(package, uninstall_first: Union[List[str], str] = None):
     if os.getenv("WAS_BLOCK_AUTO_INSTALL", 'False').lower() in ('true', '1', 't'):
